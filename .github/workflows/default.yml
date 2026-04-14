@@ -75,7 +75,10 @@ jobs:
         with:
           registry-url: 'https://registry.npmjs.org'
 
-      - run: pnpm build
+      - run: |
+          cp README.md packages/server/README.md
+          cp LICENSE packages/server/LICENSE
+          pnpm build
 
       - uses: changesets/action@v1
         with:
