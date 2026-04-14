@@ -21,6 +21,27 @@ Add the server to your MCP client (e.g. Claude Desktop, Cursor, VS Code):
 
 Set `cwd` to the project that contains your config file. See [Config Format](../configuration/format/) for all supported formats.
 
+### Alternative: global install
+
+If you prefer not to use `npx`, install globally:
+
+```bash
+npm i -g mcp-general
+```
+
+Then use `mcp-general` directly:
+
+```json
+{
+  "mcpServers": {
+    "mcp-general": {
+      "command": "mcp-general",
+      "cwd": "/path/to/your/project"
+    }
+  }
+}
+```
+
 ## Init tool
 
 If no config file is found, the server exposes a single `init` tool. When called by an agent, it detects your project setup and creates:
