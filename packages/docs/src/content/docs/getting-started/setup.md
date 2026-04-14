@@ -19,7 +19,7 @@ Add the server to your MCP client (e.g. Claude Desktop, Cursor, VS Code):
 }
 ```
 
-Set `cwd` to the project that contains your config file. See [Config Format](/configuration/format/) for all supported formats.
+Set `cwd` to the project that contains your config file. See [Config Format](../configuration/format/) for all supported formats.
 
 ## Init tool
 

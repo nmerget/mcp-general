@@ -22,7 +22,7 @@
 ### 🔧 [Built-in Tools →](https://nmerget.github.io/mcp-general/reference/built-in-tools/)
 
 [docs-url]: https://nmerget.github.io/mcp-general/
-[logo-url]: packages/docs/src/assets/mcp-general-icon.webp
+[logo-url]: packages/docs/src/assets/mcp-general-icon-small.webp
 [version]: https://badgen.net/npm/v/mcp-general?label=Version&color=1AD1A5
 [license]: https://badgen.net/github/license/nmerget/mcp-general?label=License&color=1AD1A5
 [stars]: https://badgen.net/github/stars/nmerget/mcp-general?label=Stars&color=1AD1A5
