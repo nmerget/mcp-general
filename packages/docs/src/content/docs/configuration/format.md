@@ -14,7 +14,7 @@ Place one of the following in your project root:
 - `"mcp-general"` key in `package.json`
 
 :::tip
-Use the `init` tool to automatically generate the right format for your project. See [Setup](/getting-started/setup/) for details.
+Use the `init` tool to automatically generate the right format for your project. See [Setup](../getting-started/setup/) for details.
 :::
 
 ## TypeScript

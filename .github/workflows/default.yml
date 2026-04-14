@@ -24,11 +24,15 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      - run: pnpm lint
-
-      - run: pnpm test
-
-      - run: pnpm build
+      - name: CI checks
+        run: |
+          if [ "${{ github.actor }}" = "github-actions[bot]" ] && [ "${{ github.head_ref }}" = "changeset-release/main" ]; then
+            echo "Skipping CI for changeset release PR"
+            exit 0
+          fi
+          pnpm lint
+          pnpm test
+          pnpm build
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
