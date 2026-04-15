@@ -1,4 +1,4 @@
-import { access, mkdir, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
@@ -79,6 +79,19 @@ async function writeWithDirs(path: string, content: string): Promise<void> {
   await writeFile(path, content);
 }
 
+async function hasDep(cwd: string, name: string): Promise<boolean> {
+  try {
+    const pkg = JSON.parse(await readFile(join(cwd, 'package.json'), 'utf-8'));
+    return !!(
+      pkg.dependencies?.[name] ||
+      pkg.devDependencies?.[name] ||
+      pkg.peerDependencies?.[name]
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function registerInitTool(server: McpServer) {
   server.registerTool(
     'init',
@@ -93,10 +106,16 @@ export function registerInitTool(server: McpServer) {
 
       let filename: string;
       let content: string;
+      const created: string[] = [];
 
       if (hasTsconfig) {
         filename = 'mcp-general.config.ts';
         content = TS_CONFIG;
+        if (!(await hasDep(cwd, 'mcp-general'))) {
+          created.push(
+            'NOTE: Please install mcp-general as a dev dependency for type support (e.g. pnpm add -D mcp-general)',
+          );
+        }
       } else if (hasPackageJson) {
         filename = 'mcp-general.config.js';
         content = JS_CONFIG;
@@ -105,8 +124,6 @@ export function registerInitTool(server: McpServer) {
         content =
           JSON.stringify({ namespaces: EXAMPLE_NAMESPACES }, null, 2) + '\n';
       }
-
-      const created: string[] = [];
 
       const configPath = join(cwd, filename);
       await writeFile(configPath, content);

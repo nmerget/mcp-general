@@ -66,6 +66,28 @@ The `init` tool also creates instruction files that tell AI agents to use `list_
 
 Existing rule files are not overwritten.
 
+## Environment variables
+
+| Variable           | Description                                      |
+| ------------------ | ------------------------------------------------ |
+| `MCPG_CONFIG_PATH` | Override the config file path instead of auto-detecting via cosmiconfig |
+
+Example:
+
+```json
+{
+  "mcpServers": {
+    "mcp-general": {
+      "command": "npx",
+      "args": ["-y", "mcp-general"],
+      "env": {
+        "MCPG_CONFIG_PATH": "/path/to/custom/mcp-general.config.ts"
+      }
+    }
+  }
+}
+```
+
 ## Local development
 
 To run from source:
