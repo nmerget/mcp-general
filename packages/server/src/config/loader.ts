@@ -8,6 +8,8 @@ const explorer = cosmiconfig('mcp-general', {
 });
 
 export async function loadConfig() {
+  const configPath = process.env.MCPG_CONFIG_PATH;
+  if (configPath) return explorer.load(configPath);
   return explorer.search();
 }
 
