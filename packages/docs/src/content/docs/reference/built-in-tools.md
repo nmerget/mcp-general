@@ -11,6 +11,10 @@ In addition to the tools defined in your config, MCP General provides built-in t
 
 Creates an example config file and agent rule files in the current working directory. The config format is auto-detected based on the project setup. Agent rules instruct AI assistants to use `list_namespaces` and `list_actions` for context discovery. Existing rule files are not overwritten.
 
+:::note
+After `init` creates the config, you need to **restart the MCP server** to load it.
+:::
+
 | Property    | Value                                                                |
 | ----------- | -------------------------------------------------------------------- |
 | Name        | `init`                                                               |
@@ -22,6 +26,7 @@ Files created:
 - `.amazonq/rules/mcp-general.md`
 - `.github/instructions/mcp-general.instructions.md`
 - `.cursor/rules/mcp-general.mdc`
+- `.gitignore` — adds `.mcpg` (cache directory) if not already present
 
 ## `list_namespaces`
 
@@ -33,7 +38,7 @@ Returns a newline-separated list of all namespace names (with descriptions if pr
 | ----------- | ----------------------------- |
 | Name        | `list_namespaces`             |
 | Parameters  | None                          |
-| Description | List all available namespaces |
+| Description | List all available namespaces with their tools, resources, and prompts counts. Use list_actions to see the specific action names. |
 
 ## `list_actions`
 
