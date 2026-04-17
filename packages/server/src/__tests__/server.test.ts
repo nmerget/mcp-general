@@ -22,6 +22,7 @@ async function setup(register: (server: McpServer) => void) {
 }
 
 const testConfig: McpGeneralConfig = {
+  cache: false,
   namespaces: {
     exampleui: {
       tools: {
