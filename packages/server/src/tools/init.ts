@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
@@ -136,6 +136,23 @@ export function registerInitTool(server: McpServer) {
           created.push(relativePath);
         }
       }
+
+      // Ensure .mcpg is in .gitignore
+      const gitignorePath = join(cwd, '.gitignore');
+      try {
+        const gitignore = await readFile(gitignorePath, 'utf-8');
+        if (!gitignore.includes('.mcpg')) {
+          await appendFile(gitignorePath, '\n# mcp-general cache\n.mcpg\n');
+          created.push('.gitignore (added .mcpg)');
+        }
+      } catch {
+        await writeFile(gitignorePath, '# mcp-general cache\n.mcpg\n');
+        created.push('.gitignore');
+      }
+
+      created.push(
+        'NOTE: Restart the MCP server to load the new configuration.',
+      );
 
       return {
         content: [

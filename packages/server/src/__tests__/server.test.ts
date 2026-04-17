@@ -182,7 +182,7 @@ describe('init tool', () => {
 });
 
 describe('list_namespaces tool', () => {
-  it('returns namespace names', async () => {
+  it('returns namespace names with counts', async () => {
     const config = testConfig;
     const { client } = await setup((s) =>
       registerListNamespacesTool(s, () => config),
@@ -191,6 +191,9 @@ describe('list_namespaces tool', () => {
     const text = (result.content as { text: string }[])[0].text;
     expect(text).toContain('exampleui');
     expect(text).toContain('tanstack');
+    expect(text).toContain('2 tools');
+    expect(text).toContain('1 resources');
+    expect(text).toContain('1 prompts');
   });
 });
 

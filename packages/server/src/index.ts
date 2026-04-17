@@ -3,7 +3,7 @@
 import { createRequire } from 'node:module';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { loadConfig, watchConfig } from './config/loader.js';
+import { loadConfig } from './config/loader.js';
 import { registerConfig } from './config/register.js';
 import type { McpGeneralConfig } from './config/types.js';
 import { registerInitTool } from './tools/init.js';
@@ -23,21 +23,12 @@ async function main() {
     return;
   }
 
-  let currentConfig: McpGeneralConfig = { namespaces: {} };
-  const getConfig = () => currentConfig;
-
+  const config: McpGeneralConfig = result.config;
   const configDir = result.filepath.replace(/[/\\][^/\\]+$/, '');
 
-  const applyConfig = (config: McpGeneralConfig) => {
-    currentConfig = config;
-    registerConfig(server, config, configDir);
-  };
-
-  registerListNamespacesTool(server, getConfig);
-  registerListActionsTool(server, getConfig);
-  applyConfig(result.config);
-
-  watchConfig(result.filepath, applyConfig);
+  registerListNamespacesTool(server, () => config);
+  registerListActionsTool(server, () => config);
+  registerConfig(server, config, configDir);
 
   await server.connect(new StdioServerTransport());
 }

@@ -46,6 +46,10 @@ Then use `mcp-general` directly:
 
 If no config file is found, the server exposes a single `init` tool. When called by an agent, it detects your project setup and creates:
 
+:::note
+After `init` creates the config, you need to **restart the MCP server** to load it.
+:::
+
 ### Config file
 
 | Project has         | Generated file          |

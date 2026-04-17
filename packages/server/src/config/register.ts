@@ -3,11 +3,9 @@ import { execFile } from 'node:child_process';
 import { resolve, extname } from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { McpGeneralConfig, McpGeneralEntry } from './types.js';
-import { parseEntry, getEntrySource } from './types.js';
-
-type Removable = { remove(): void };
-
-let registered: Removable[] = [];
+import { parseEntry, getEntrySource, resolveCache } from './types.js';
+import { compressContent } from './compress.js';
+import { readCache, writeCache, DEFAULT_TTL } from './cache.js';
 
 const DEFAULT_RUNNERS: Record<string, { command: string; args?: string[] }> = {
   '.js': { command: 'node' },
@@ -52,40 +50,58 @@ async function getContent(
   return readFile(filePath, 'utf-8');
 }
 
+async function getCachedContent(
+  entry: McpGeneralEntry,
+  configDir: string,
+  namespace: string,
+  name: string,
+  source: string,
+  ttl: number | false,
+): Promise<string> {
+  if (ttl !== false) {
+    const cached = await readCache(configDir, namespace, name, source, ttl);
+    if (cached !== undefined) return cached;
+  }
+
+  let text = await getContent(entry, configDir);
+  if (entry.compress !== false) text = compressContent(text);
+
+  if (ttl !== false) {
+    await writeCache(configDir, namespace, name, source, text);
+  }
+
+  return text;
+}
+
 export function registerConfig(
   server: McpServer,
   config: McpGeneralConfig,
   configDir: string,
 ) {
-  const wasConnected = registered.length > 0;
-  for (const item of registered) item.remove();
-  registered = [];
+  for (const [namespace, ns] of Object.entries(config.namespaces)) {
+    const { tools, resources, prompts } = ns;
 
-  for (const [namespace, { tools, resources, prompts }] of Object.entries(
-    config.namespaces,
-  )) {
     if (tools) {
       for (const [name, value] of Object.entries(tools)) {
         const entry = parseEntry(value);
         const source = getEntrySource(entry);
-        registered.push(
-          server.registerTool(
-            `${namespace}_${name}`,
-            { description: entry.description ?? `Fetch ${source}` },
-            async () => {
-              try {
-                const text = await getContent(entry, configDir);
-                return { content: [{ type: 'text' as const, text }] };
-              } catch (e: unknown) {
-                return {
-                  content: [
-                    { type: 'text' as const, text: (e as Error).message },
-                  ],
-                  isError: true,
-                };
-              }
-            },
-          ),
+        const ttl = resolveCache(config.cache, ns.cache, entry.cache, DEFAULT_TTL);
+        server.registerTool(
+          `${namespace}_${name}`,
+          { description: entry.description ?? `Fetch ${source}` },
+          async () => {
+            try {
+              const text = await getCachedContent(entry, configDir, namespace, name, source, ttl);
+              return { content: [{ type: 'text' as const, text }] };
+            } catch (e: unknown) {
+              return {
+                content: [
+                  { type: 'text' as const, text: (e as Error).message },
+                ],
+                isError: true,
+              };
+            }
+          },
         );
       }
     }
@@ -95,20 +111,19 @@ export function registerConfig(
         const entry = parseEntry(value);
         const source = getEntrySource(entry);
         const uri = `${namespace}://${name}`;
-        registered.push(
-          server.registerResource(
-            `${namespace}_${name}`,
-            uri,
-            { description: entry.description ?? `Fetch ${source}` },
-            async () => {
-              try {
-                const text = await getContent(entry, configDir);
-                return { contents: [{ uri, text }] };
-              } catch (e: unknown) {
-                return { contents: [{ uri, text: (e as Error).message }] };
-              }
-            },
-          ),
+        const ttl = resolveCache(config.cache, ns.cache, entry.cache, DEFAULT_TTL);
+        server.registerResource(
+          `${namespace}_${name}`,
+          uri,
+          { description: entry.description ?? `Fetch ${source}` },
+          async () => {
+            try {
+              const text = await getCachedContent(entry, configDir, namespace, name, source, ttl);
+              return { contents: [{ uri, text }] };
+            } catch (e: unknown) {
+              return { contents: [{ uri, text: (e as Error).message }] };
+            }
+          },
         );
       }
     }
@@ -117,41 +132,34 @@ export function registerConfig(
       for (const [name, value] of Object.entries(prompts)) {
         const entry = parseEntry(value);
         const source = getEntrySource(entry);
-        registered.push(
-          server.registerPrompt(
-            `${namespace}_${name}`,
-            { description: entry.description ?? `Fetch ${source}` },
-            async () => {
-              try {
-                const text = await getContent(entry, configDir);
-                return {
-                  messages: [
-                    { role: 'user' as const, content: { type: 'text', text } },
-                  ],
-                };
-              } catch (e: unknown) {
-                return {
-                  messages: [
-                    {
-                      role: 'user' as const,
-                      content: {
-                        type: 'text',
-                        text: `Error: ${(e as Error).message}`,
-                      },
+        const ttl = resolveCache(config.cache, ns.cache, entry.cache, DEFAULT_TTL);
+        server.registerPrompt(
+          `${namespace}_${name}`,
+          { description: entry.description ?? `Fetch ${source}` },
+          async () => {
+            try {
+              const text = await getCachedContent(entry, configDir, namespace, name, source, ttl);
+              return {
+                messages: [
+                  { role: 'user' as const, content: { type: 'text', text } },
+                ],
+              };
+            } catch (e: unknown) {
+              return {
+                messages: [
+                  {
+                    role: 'user' as const,
+                    content: {
+                      type: 'text',
+                      text: `Error: ${(e as Error).message}`,
                     },
-                  ],
-                };
-              }
-            },
-          ),
+                  },
+                ],
+              };
+            }
+          },
         );
       }
     }
-  }
-
-  if (wasConnected) {
-    server.sendToolListChanged();
-    server.sendResourceListChanged();
-    server.sendPromptListChanged();
   }
 }

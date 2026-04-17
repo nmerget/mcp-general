@@ -24,11 +24,12 @@ This registers a tool named `mylib_get_docs`. The description is shown when usin
 
 ## Mixing primitives
 
-A namespace can contain any combination of `tools`, `resources`, and `prompts`:
+A namespace can contain any combination of `tools`, `resources`, and `prompts`. You can also set a `cache` option to control caching for all entries in the namespace (see [Config Format](../configuration/format/#caching)):
 
 ```ts
 namespaces: {
   tanstack: {
+    cache: { ttl: 3_600_000 }, // 1 hour for all entries in this namespace
     tools: {
       search: { url: "https://tanstack.com/search", description: "Search docs" },
     },

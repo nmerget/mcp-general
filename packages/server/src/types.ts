@@ -5,4 +5,6 @@ export type {
   McpGeneralEntryValue,
   McpGeneralExecute,
   McpGeneralExecuteConfig,
+  McpGeneralCache,
+  McpGeneralCacheConfig,
 } from './config/types.js';

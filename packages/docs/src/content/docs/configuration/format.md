@@ -13,6 +13,10 @@ Place one of the following in your project root:
 - `.mcp-generalrc.yaml`
 - `"mcp-general"` key in `package.json`
 
+:::note
+After creating or changing the config file, you need to **restart the MCP server** for changes to take effect.
+:::
+
 :::tip
 Use the `init` tool to automatically generate the right format for your project. See [Setup](../getting-started/setup/) for details.
 :::
@@ -135,6 +139,76 @@ tools: {
   },
 }
 ```
+
+### Compressing content
+
+By default, all content is compressed before being returned — HTML/JSX tags, images, base64 blocks, import statements, and redundant whitespace are stripped to reduce token size for LLM consumption.
+
+To disable compression for a specific entry, set `compress: false`:
+
+```ts
+tools: {
+  // Compression is ON by default — no need to set anything
+  get_llms: {
+    url: "https://example.com/llms-full.txt",
+    description: "Compressed documentation",
+  },
+  // Disable compression for entries where raw content matters
+  get_raw: {
+    path: "./docs/raw-template.html",
+    compress: false,
+    description: "Raw HTML template",
+  },
+}
+```
+
+### Caching
+
+By default, all fetched content is cached to the `.mcpg` folder in your project root with a TTL of **1 day** (86 400 000 ms). Cached files are plain text — you can inspect them at any time.
+
+Cache can be configured at three levels, where the most specific level wins:
+
+1. **Root** — applies to all namespaces and entries
+2. **Namespace** — applies to all entries in that namespace
+3. **Entry** — applies to a single entry
+
+Each level accepts `true` (default TTL), `false` (disabled), or `{ ttl: <ms> }` for a custom TTL.
+
+```ts
+import type { McpGeneralConfig } from 'mcp-general';
+
+const config: McpGeneralConfig = {
+  // Root level: default for everything
+  cache: { ttl: 7 * 24 * 60 * 60 * 1000 }, // 7 days
+  namespaces: {
+    docs: {
+      // Namespace level: override root for this namespace
+      cache: { ttl: 60 * 60 * 1000 }, // 1 hour
+      tools: {
+        // Entry level: disable cache for this specific tool
+        get_live_status: {
+          url: 'https://example.com/status',
+          cache: false,
+        },
+        // Uses namespace TTL (1 hour)
+        get_guide: 'https://example.com/guide.md',
+      },
+    },
+    static: {
+      // No namespace cache set → uses root TTL (7 days)
+      tools: {
+        get_reference: 'https://example.com/reference.md',
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+:::tip
+The `init` tool automatically adds `.mcpg` to your `.gitignore`. If you set up the project manually, make sure to add it yourself.
+:::
 
 ## Resulting registrations
 
