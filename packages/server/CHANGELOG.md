@@ -1,5 +1,14 @@
 # MCP General
 
+## 1.2.0
+
+### Minor Changes
+
+- [#9](https://github.com/nmerget/mcp-general/pull/9) [`a23b278`](https://github.com/nmerget/mcp-general/commit/a23b278b07850d94c08647df70b1d4c49903f3df) Thanks [@nmerget](https://github.com/nmerget)! - Add content compression and file-based caching.
+  - **Compress**: All fetched content is now compressed by default — HTML/JSX tags, images, base64 blocks, import statements, and redundant whitespace are stripped to reduce token size. Set `compress: false` on an entry to return raw content.
+  - **Cache**: Fetched content is cached to the `.mcpg` folder with a default TTL of 1 day. Cache can be configured at root, namespace, or entry level using `true`, `false`, or `{ ttl: <ms> }`. The most specific level wins.
+  - The `init` tool now adds `.mcpg` to `.gitignore` automatically.
+
 ## 1.1.0
 
 ### Minor Changes
