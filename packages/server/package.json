@@ -48,12 +48,12 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "cosmiconfig": "9.0.1",
+    "cosmiconfig": "9.0.2",
     "cosmiconfig-typescript-loader": "6.3.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/node": "25.9.1",
+    "@types/node": "25.9.2",
     "typescript": "6.0.3",
     "vitest": "4.1.8"
   }
